@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Optional;
 
+import pl.sda.servlets.model.ForbiddenNamesValidator;
 import pl.sda.servlets.utils.ResponseUtil;
 
 @WebServlet(name = "NameServlet", urlPatterns = {"/name"})
@@ -47,8 +48,13 @@ public class NameServlet extends HttpServlet {
 
 		req.getRequestDispatcher(path).include(req, resp);
 	}
+
 	protected String convertNameToProperPath(String name, PrintWriter writer) {
 		if (name.matches(NAME_REGEX)) {
+			if(ForbiddenNamesValidator.isForbidden(name)){
+				writer.println("<h4 style=\"color: red\">Imię zabronione !</h4>");
+				return MAIN_SITE_PATH;
+			}
 			writer.println("<h4>Twoje imię to: " + name + "</h4>");
 			return name.matches(FEMALE_MALE_REGEX) ? FEMALE_PATH : MALE_PATH;
 		} else {
