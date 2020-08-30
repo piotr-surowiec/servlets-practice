@@ -1,5 +1,7 @@
 package pl.sda.servlets.controller;
 
+import static pl.sda.servlets.controller.GreetingsFilter.ACCESS_TO_GREETING;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -17,10 +19,8 @@ public class NameServlet extends HttpServlet {
 
 	public static final String PARAMETER_NAME = "name";
 	private static final String NAME_REGEX = "[A-Z][a-z]+";
-	private static final String FEMALE_MALE_REGEX = ".+a";
-	private static final String FEMALE_PATH = "/female";
-	private static final String MALE_PATH = "/male";
 	private static final String MAIN_SITE_PATH = "/index.jsp";
+	public static final String GREETING_PATH = "/greeting";
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -42,21 +42,21 @@ public class NameServlet extends HttpServlet {
 		PrintWriter writer = resp.getWriter();
 		Optional<String> givenName = Optional.ofNullable(req.getParameter(PARAMETER_NAME));
 		String path = givenName
-				.map(name -> convertNameToProperPath(name, writer))
+				.map(name -> convertNameToProperPath(name, writer, req))
 				.orElseGet(() -> getPathWhenMissingName(writer));
 
 
 		req.getRequestDispatcher(path).include(req, resp);
 	}
 
-	protected String convertNameToProperPath(String name, PrintWriter writer) {
+	protected String convertNameToProperPath(String name, PrintWriter writer, HttpServletRequest request) {
 		if (name.matches(NAME_REGEX)) {
 			if(ForbiddenNamesValidator.isForbidden(name)){
 				writer.println("<h4 style=\"color: red\">Imię zabronione !</h4>");
 				return MAIN_SITE_PATH;
 			}
-			writer.println("<h4>Twoje imię to: " + name + "</h4>");
-			return name.matches(FEMALE_MALE_REGEX) ? FEMALE_PATH : MALE_PATH;
+			request.setAttribute(ACCESS_TO_GREETING, true);
+			return GREETING_PATH;
 		} else {
 			writer.println("<h4>Imię podane w złym formacie</h4>");
 			return MAIN_SITE_PATH;
