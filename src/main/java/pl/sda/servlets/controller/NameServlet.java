@@ -16,6 +16,10 @@ public class NameServlet extends HttpServlet {
 
 	public static final String PARAMETER_NAME = "name";
 	public static final String NAME_REGEX = "[A-Z][a-z]+";
+	public static final String FEMALE_MALE_REGEX = ".+a";
+	public static final String FEMALE_PATH = "/female";
+	public static final String MALE_PATH = "/male";
+	public static final String MAIN_SITE_PATH = "/index.jsp";
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -25,7 +29,7 @@ public class NameServlet extends HttpServlet {
 		PrintWriter writer = resp.getWriter();
 		writer.println("<h2 style=\"color: red\" Nie obsługujemy getów !</h2>");
 
-		req.getRequestDispatcher("./index.jsp").include(req, resp);
+		req.getRequestDispatcher("/index.jsp").include(req, resp);
 
 	}
 
@@ -36,16 +40,25 @@ public class NameServlet extends HttpServlet {
 
 		PrintWriter writer = resp.getWriter();
 		Optional<String> givenName = Optional.ofNullable(req.getParameter(PARAMETER_NAME));
-		givenName.ifPresentOrElse(name -> processNameParameters(name, writer),
-				() -> writer.println("Nie podałeś imienia"));
+		String path = givenName
+				.map(name -> convertNameToProperPath(name, writer))
+				.orElseGet(() -> getPathWhenMissingName(writer));
 
-		req.getRequestDispatcher("/index.jsp").include(req, resp);
+
+		req.getRequestDispatcher(path).include(req, resp);
 	}
-	private void processNameParameters(String name, PrintWriter writer){
-		if(name.matches(NAME_REGEX)){
+	protected String convertNameToProperPath(String name, PrintWriter writer) {
+		if (name.matches(NAME_REGEX)) {
 			writer.println("<h4>Twoje imię to: " + name + "</h4>");
-		}else{
+			return name.matches(FEMALE_MALE_REGEX) ? FEMALE_PATH : MALE_PATH;
+		} else {
 			writer.println("<h4>Imię podane w złym formacie</h4>");
+			return MAIN_SITE_PATH;
 		}
+	}
+
+	private String getPathWhenMissingName(PrintWriter writer) {
+		writer.println("Nie podałeś imienia");
+		return MAIN_SITE_PATH;
 	}
 }

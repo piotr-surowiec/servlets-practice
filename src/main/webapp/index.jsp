@@ -4,7 +4,7 @@
 <h2>Servlet practise</h2>
 <form action="./name" method="post">
     <label>Imię:
-        <input type="text" name="name" required>
+        <input type="text" name="name">
     </label><br>
     <input type="submit" value="Wyślij">
 </form>
